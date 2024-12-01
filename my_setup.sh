@@ -1,5 +1,9 @@
 #===================================================
-# START INSTRUCTIONS
+# My setup to quickly install system on VM
+#===================================================
+
+#===================================================
+# SSH connection
 #===================================================
 
 pacman -Sy --needed openssh
@@ -88,27 +92,9 @@ reboot
 # END INSTRUCTIONS
 #===================================================
 
-# POST INSTALLATOIN
-# INFO if need to connect to the wifi you can use: `nmtui`
-
-# INFO Install KDE Plasma and kscreen for screen management
-# INFO Install graphic card drivers for intel dedicated graphics
-sudo pacman -S intel-ucode pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber;
-sudo pacman -S plasma-desktop kscreen;
-sudo pacman -S firefox kitty;
-sudo pacman -S xf86-video-intel 
-
-#Display managers are useful when you have multiple DE or WMs and want to choose where to boot from in a GUI fashion, also they take care of the launch process.
-
-# Install SDDM
-sudo pacman -S sddm;
-sudo systemctl enable sddm;
-sudo pacman -S --needed sddm-kcm
-
 # INFO configure snapper
 # https://wiki.archlinux.org/title/Snapper point 5.3.1
 # WARN `inotify-tools` are required before setup
-# WARN swapfile is crashing snapshots use swapoff
 
 sudo umount /.snapshots;
 sudo rm -r /.snapshots;
@@ -125,6 +111,7 @@ sudo chmod 750 /.snapshots
 # INFO snapper configuration is inside /etc/snapper/configs/root
 
 sudo nvim /etc/snapper/configs/root
+
 # ALLOW_USERS="my_username"
 # ALLOW_GROUPS="my_group" eg `wheel`
 # # My settings for automatic snapshots
@@ -134,20 +121,9 @@ sudo nvim /etc/snapper/configs/root
 # TIMELINE_LIMIT_WEEKLY="0"
 # TIMELINE_LIMIT_MONTHLY="3"
 # TIMELINE_LIMIT_YEARLY="5"
-#
-# INFO To disable hourly snapshots set below to "no"
-# TIMELINE_CREATE="no"
-
-# To enable scheduled snapshots enable cronie, all configuration is in above file
 
 sudo pacman -S --needed cronie;
 systemctl enable cronie.service
-
-# This is not needed if you have cronie
-# sudo systemctl enable --now snapper-timeline.timer
-# sudo systemctl enable --now snapper-cleanup.timer
-
-# To enable that snapshots show up in GRUB Enable grub-btrfs.path to refresh the shapshot list
 
 sudo systemctl enable grub-btrfsd
 
@@ -157,7 +133,6 @@ sudo systemctl enable grub-btrfsd
 
 # update grub
 sudo grub-mkconfig -o /boot/grub/grub.cfg
-
 
 # INFO Fix restore ro snapshots from grub
 # Instructions for Arch: https://github.com/Antynea/grub-btrfs/blob/master/initramfs/readme.md
@@ -177,10 +152,20 @@ sudo mkinitcpio -P
 # https://github.com/wesbarnett/snap-pac
 sudo pacman -S snap-pac
 
+# POST INSTALLATION
+# INFO if need to connect to the wifi you can use: `nmtui`
+
+sudo pacman -S intel-ucode pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber;
+sudo pacman -S plasma-desktop kscreen;
+sudo pacman -S firefox kitty;
+sudo pacman -S xf86-video-intel 
+
+# Install SDDM
+sudo pacman -S sddm;
+sudo systemctl enable sddm;
+sudo pacman -S --needed sddm-kcm
 
 # TODO Enable hibernation
-
-
 
 # TODO edit /etc/mkinitcpio.conf
 # add `MODULES=(btrfs)` to MODULES
