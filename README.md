@@ -162,7 +162,7 @@ Now unmount `/mnt` and remount the Linux partition with below settings
 
 ```sh
 umount /mnt;
-mount -o noatime,compress=lzo,space_cache=v2,subvol=@ /dev/vda2 /mnt
+mount -o noatime,compress=lzo,space_cache=v2,subvol=@ /dev/<linux_patrition> /mnt
 ```
 
 More about selected options can be found here: [link](https://btrfs.readthedocs.io/en/latest/ch-mount-options.html).
@@ -182,11 +182,11 @@ mkdir -p /mnt/{home,var/log,var/tmp,var/cache/pacman/pkg,.snapshots,swap}
 ...and mount subvolumes
 
 ```sh
-mount -o noatime,compress=lzo,space_cache=v2,subvol=@home /dev/vda2 /mnt/home;
-mount -o noatime,compress=lzo,space_cache=v2,subvol=@log /dev/vda2 /mnt/var/log;
-mount -o noatime,compress=lzo,space_cache=v2,subvol=@tmp /dev/vda2 /mnt/var/tmp;
-mount -o noatime,compress=lzo,space_cache=v2,subvol=@pacman /dev/vda2 /mnt/var/cache/pacman/pkg;
-mount -o noatime,compress=lzo,space_cache=v2,subvol=@snapshots /dev/vda2 /mnt/.snapshots
+mount -o noatime,compress=lzo,space_cache=v2,subvol=@home /dev/<linux_partition> /mnt/home;
+mount -o noatime,compress=lzo,space_cache=v2,subvol=@log /dev/<linux_partition> /mnt/var/log;
+mount -o noatime,compress=lzo,space_cache=v2,subvol=@tmp /dev/<linux_partition> /mnt/var/tmp;
+mount -o noatime,compress=lzo,space_cache=v2,subvol=@pacman /dev/<linux_partition> /mnt/var/cache/pacman/pkg;
+mount -o noatime,compress=lzo,space_cache=v2,subvol=@snapshots /dev/<linux_partition> /mnt/.snapshots
 ```
 
 ## 💿 System installation <a name="---system-installation"></a>
@@ -287,25 +287,35 @@ systemctl enable sshd
 
 > :warning: - Swapfile needs to be mounted as subvolume, otherwise `Snapper` won't work. There can be error like `Cannot create snapshot`.
 
-The default swap size is 2GB if, `--size` option is not set. Swapfile is recommended option on BTRFS partition.
 Instructions how to enable swap on BTRFS are here: [link](https://wiki.archlinux.org/title/Btrfs#Swap_file).
+I found it easier to make swap work with snapshots and BTRFS by creating swapfile manually rather than using the above instructions form the Arch wiki.
+First, mount the `@swap` subvolume, create a swapfile inside the swap folder and give it `600` permissions. Use the `chattr` command to disable `copy on write` for this file. Set the size of the swap with the `dd` command where: if - input file, of - output, bs - block size and count is swap size. After that format swapfile and turn on swap.
+
+> :warning: - Use `dd` to allocate swap space instead of `fallocate`, because it can create file-system holes, more info [here](https://askubuntu.com/questions/1017309/fallocate-vs-dd-for-swapfile).
 
 ```sh
-swap_size=2;
-sudo mount -o subvol=@swap /dev/vda2 /swap;
-btrfs filesystem mkswapfile --size "$swap_size"g --uuid clear /swap/swapfile;
-swapon /swap/swapfile
+swap_size=2048;
+sudo mount -o subvol=@swap /dev/<linux_partition> /swap;
+sudo touch /swap/swapfile;
+sudo chmod 600 /swap/swapfile;
+sudo chattr +C /swap/swapfile;
+sudo dd if=/dev/zero of=/swap/swapfile bs=1024 count=$swap_size;
+sudo mkswap /swap/swapfile;
+sudo swapon /swap/swapfile
 ```
 
-Edit `fstab` and add swapfile entry at the end of the file.
+Edit `fstab` and add swapfile entries at the end of the file to make changes permanent. First defines that `/swap` folder is a separate subvolume and second defines swapfile.
 
 ```sh
-echo '/swap/swapfile    none    swap     defaults   0   0' >> /etc/fstab
+echo 'UUID=<uudi_of_the_btrfs>  /swap  btrfs  subvol=/@swap  0  0' >> /etc/fstab;
+echo '/swap/swapfile            none   swap   defaults       0  0' >> /etc/fstab
 ```
+
+Verify the `/etc/fstab` file after all changes. SWAP should work now with correctly together with snapshots.
 
 ### Installing and configuring the GRUB boot loader <a name="installing-and-configuring-the-grub-boot-loader"></a>
 
-> :warning: - Here give the path to your hard disk, not the partition volume where you want to install GRUB. Instead of `vda2` use `vda`.
+> :warning: - Here give the path to your hard disk, not the partition volume where you want to install GRUB, e.g. instead of `vda2` use `vda`.
 
 ```sh
 grub-install /dev/<disk>;
@@ -356,7 +366,7 @@ sudo chmod 750 /.snapshots
 Configuration files for Snapper are in `/etc/snapper/configs/root` file. To use it as a sudo user there is need to add user and group to configuration file.
 
 ```sh
-nvim /etc/snapper/configs/root
+sudo nvim /etc/snapper/configs/root
 ```
 
 Add user and group to be able to use Snapper as user not root:
@@ -370,7 +380,7 @@ By default `Snapper` is creating scheduled hourly snapshots. This is not working
 
 ```sh
 sudo pacman -S --needed cronie;
-systemctl enable cronie.service
+sudo systemctl enable cronie.service
 ```
 
 If you do not want cronie you can use enable below (optional):
@@ -422,7 +432,7 @@ sudo systemctl enable grub-btrfsd
 Update GRUB to apply all changes.
 
 ```sh
-grub-mkconfig -o /boot/grub/grub.cfg
+sudo grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
 ### Fix restore read only snapshots from GRUB <a name="fix-restore-read-only-snapshots-from-grub"></a>

@@ -16,7 +16,7 @@ ip address
 ssh root@<ip_address>
 
 #===================================================
-# INSTRUCTIONS
+# INSTALLATION
 #===================================================
 
 loadkeys pl;
@@ -71,12 +71,17 @@ EDITOR=nvim visudo
 #
 # Uncomment line with wheel %wheel ALL=(ALL) ALL
 #
-swap_size=8;
-sudo mount -o subvol=@swap /dev/vda2 /swap;
-btrfs filesystem mkswapfile --size "$swap_size"g --uuid clear /swap/swapfile;
+swap_size=4096;
+mount -o subvol=@swap /dev/<linux_partition> /swap;
+touch /swap/swapfile;
+chmod 600 /swap/swapfile;
+chattr +C /swap/swapfile;
+dd if=/dev/zero of=/swap/swapfile bs=1024 count=$swap_size;
+mkswap /swap/swapfile;
 swapon /swap/swapfile
 
 # Edit fstab and add swap entry
+echo 'UUID=<uudi_of_the_btrfs>  /swap  btrfs  subvol=/@swap  0  0' >> /etc/fstab;
 echo '/swap/swapfile    none    swap     defaults   0   0' >> /etc/fstab
 
 systemctl enable NetworkManager;
@@ -89,7 +94,7 @@ umount -R /mnt;
 reboot
 
 #===================================================
-# END INSTRUCTIONS
+# SNAPPER
 #===================================================
 
 # INFO configure snapper
@@ -123,7 +128,7 @@ sudo nvim /etc/snapper/configs/root
 # TIMELINE_LIMIT_YEARLY="5"
 
 sudo pacman -S --needed cronie;
-systemctl enable cronie.service
+sudo systemctl enable cronie.service
 
 sudo systemctl enable grub-btrfsd
 
@@ -152,8 +157,11 @@ sudo mkinitcpio -P
 # https://github.com/wesbarnett/snap-pac
 sudo pacman -S snap-pac
 
+#===================================================
 # POST INSTALLATION
-# INFO if need to connect to the wifi you can use: `nmtui`
+#===================================================
+
+# INFO if need to connect to the wifi use: `nmtui`
 
 sudo pacman -S intel-ucode pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber;
 sudo pacman -S plasma-desktop kscreen;
