@@ -1,5 +1,6 @@
 #===================================================
 # My setup to quickly install system on VM
+# Without post installation steps
 #===================================================
 
 #===================================================
@@ -156,25 +157,3 @@ sudo mkinitcpio -P
 # INFO automatically create snapshots on pacman crud 
 # https://github.com/wesbarnett/snap-pac
 sudo pacman -S snap-pac
-
-#===================================================
-# POST INSTALLATION
-#===================================================
-
-# INFO if need to connect to the wifi use: `nmtui`
-
-sudo pacman -S intel-ucode pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber;
-sudo pacman -S plasma-desktop kscreen;
-sudo pacman -S firefox kitty;
-sudo pacman -S xf86-video-intel 
-
-# Install SDDM
-sudo pacman -S sddm;
-sudo systemctl enable sddm;
-sudo pacman -S --needed sddm-kcm
-
-# TODO Enable hibernation
-
-# TODO edit /etc/mkinitcpio.conf
-# add `MODULES=(btrfs)` to MODULES
-# `mkinitcpio -p linux` - regenerate initramfs

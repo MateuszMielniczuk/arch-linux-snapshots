@@ -4,10 +4,12 @@
 
 Instructions for installing and configuring a Linux system based on Arch Linux with snapshot functionality.
 System uses required BTRFS partitions, Snapper for snapshots and KDE Plasma desktop. This setup is used for testing on a VM machine.
-These instructions are based on arch wiki and [installanion guide](https://wiki.archlinux.org/title/Installation_guide).
+These instructions are based on Arch wiki and [installanion guide](https://wiki.archlinux.org/title/Installation_guide).
 All was tested with `Qemu` virtual manager and `archlinux-2024.11.01` ISO.
 
 The goal is to have a "bleeding edge" system as the main home desktop environment, and to be able to have the latest packages for testing, while being backed up by snapshots and able to quickly restore the system after failed updates, upgrades or critical changes.
+
+If you want a more stable, out of the box and easy to setup solution that does not require you to spend your whole life for setting up, use the [openSUSE Tumbleweed](https://get.opensuse.org/tumbleweed/). A very similar result can be achieved with this distribution, BTRFS partitions and snapshots can be set up with a simple UI installer and almost everything works out of the box after installation. Note that this not really contains all the latest software in this distro compared to Arch, as they aim to be more stable, describing themselves as `Leading-Edge` -> frequent updates plus stability.
 
 ## ✍🏼Collaboration
 
@@ -20,6 +22,7 @@ This is my discovery attempt to create such a system setup. Please contact me or
 - Create automatic snapshots before and after system and software updates with [snap-pac](https://github.com/wesbarnett/snap-pac)
 - Restore the system from the boot menu with [grub-btrfs](https://github.com/Antynea/grub-btrfs)
 - Desktop Environment - [KDE Plasma](https://kde.org/plasma-desktop/)
+- SWAP working with BTRFS and snapshots
 
 ## Table of contents
 
@@ -49,10 +52,6 @@ This is my discovery attempt to create such a system setup. Please contact me or
   - [Fix restore read only snapshots from GRUB](#fix-restore-read-only-snapshots-from-grub)
   - [Auto create snapshots before and after running pacman](#auto-create-snapshots-before-and-after-running-pacman)
 - [Post installation steps](#---post-installation-steps)
-  - [Install desktop environment](#install-desktop-environment)
-  - [Install browser and terminal](#install-browser-and-terminal)
-  - [Install graphic card drivers for intel dedicated graphics](#install-graphic-card-drivers-for-intel-dedicated-graphics)
-  - [Install SDDM](#install-sddm)
 
 ## 🛠️ Installation setup <a name="----installation-setup"></a>
 
@@ -201,10 +200,10 @@ reflector --country <Country1>,<Country2> --protocol https --age 12 --sort rate 
 
 ### Install base system and libraries <a name="install-base-system-and-libraries"></a>
 
-Here we are installing latest linux kernel and other packages for system to work. To install LTS linux change `linux` to `linux-lts` and `linux-lts-headers` or have them both. In this step I am adding also `snapper` and `grub-btrfs`.
+Here we are installing linux LTS kernel and other packages for system to work. To install latest linux change `linux-lts` to `linux` and `linux-headers`. It is also a good practice to have other kernel installed in case one we are using is not able to start after update. There is option to choose from kernels such as `linux-zen` or `linux-hardened`. You can also have them both and choose during system boot. In this step I am adding also `snapper` and `grub-btrfs`.
 
 ```sh
-pacstrap -K /mnt base base-devel btrfs-progs git grub grub-btrfs inotify-tools linux linux-firmware linux-headers man neovim networkmanager openssh reflector snapper sudo
+pacstrap -K /mnt base base-devel btrfs-progs git grub grub-btrfs inotify-tools linux-lts linux-lts-headers linux-firmware man neovim networkmanager openssh reflector snapper sudo
 ```
 
 ### Generate `fstab` file <a name="generate-fstab-file"></a>
@@ -468,52 +467,4 @@ sudo pacman -S snap-pac
 
 ## ⚙️ Post installation steps <a name="---post-installation-steps"></a>
 
-Log in to the system using the credentials provided in the installation steps.
-If you need to connect to the WiFi, you can use: `nmtui`.
-
-### Install desktop environment <a name="install-desktop-environment"></a>
-
-Install CPU driver, sound driver, printers, etc
-
-```sh
-sudo pacman -S cups hplip intel-ucode pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber;
-sudo systemctl enable cups
-```
-
-Install KDE Plasma and kscreen for screen management.
-
-```sh
-sudo pacman -S plasma-desktop kscreen
-```
-
-### Install browser and terminal <a name="install-browser-and-terminal"></a>
-
-```sh
-sudo pacman -S firefox kitty
-```
-
-### Install graphic card drivers for Intel dedicated graphics <a name="install-graphic-card-drivers-for-intel-dedicated-graphics"></a>
-
-```sh
-sudo pacman -S xf86-video-intel
-```
-
-### Install SDDM <a name="install-sddm"></a>
-
-Display managers are useful if you have multiple DE's or WM's and want to choose where to boot from in a GUI fashion They also they take care of the launch process.
-
-```sh
-sudo pacman -S sddm
-```
-
-Enable SDDM service to make it start on boot.
-
-```sh
-sudo systemctl enable sddm
-```
-
-For KDE install this to control the SDDM configuration from the KDE settings App.
-
-```sh
-sudo pacman -S --needed sddm-kcm
-```
+After installing the base system with working sanapshots, btrfs, swap it is time to install the desired software such as: desktop environment, display manager, drivers, base program and security enhancements. These steps depends on the user's preferences. My setup with KDE Plasma desktop can be found in this repository in a separate readme [here](POST_INSTALLATION.md) or installation script.
