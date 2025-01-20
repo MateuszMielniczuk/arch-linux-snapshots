@@ -24,11 +24,11 @@ If you need to connect to the WiFi, you can use: `nmtui`.
   - [Desktop software](#desktop-software)
   - [Fonts](#fonts)
 
-##  Configuration <a name="configuration"></a>
+## 🔧 Configuration <a name="configuration"></a>
 
 ### Pacman configuration <a name="pacman-configuration"></a>
 
-Pacman configuration files can be found in this file:
+Pacman configuration files can be found in `/etc/pacman.conf`:
 
 ```sh
 sudo nvim /etc/pacman.conf
@@ -53,13 +53,13 @@ Before installing further software and drivers it is recommended to upgrade the 
 sudo pacman -Syu
 ```
 
-## 🔒 Security <a name="#security"></a>
+## 🔒 Security <a name="security"></a>
 
-### Firewall <a name="#firewall"></a>
+### Firewall <a name="firewall"></a>
 
-The simplest and most popular firewall is `ufw`. Below is the basic installation with pacman and setup. First it is good to stop `ufw` before configuration or make sure that it is not running. This is basic setup allowing only ssh and http ports to be accessed from outside.
+The simplest and most popular firewall is `ufw`. Below is the basic installation with pacman and setup. First it is good to stop `ufw` before configuration or make sure that it is not running. This is basic setup allowing only SSH and HTTP ports to be accessed from outside.
 
-Install UFW with command
+Install UFW with command:
 
 ```sh
 sudo pacman -S ufw
@@ -88,13 +88,13 @@ sudo ufw enable
 
 ### CPU drivers <a name="#cpu-drivers"></a>
 
-Install your CPU drivers. First check CPU info with command:
+Install your CPU drivers, but first check CPU info with command:
 
 ```sh
 lscpu
 ```
 
-More about microcode CPU drivers can be found in this [wiki](https://wiki.archlinux.org/title/Microcode). Depends of your CPU manufacturer install `amd-ucode` or `intel-ucode` package like below:
+More about microcode CPU drivers can be found in this [wiki](https://wiki.archlinux.org/title/Microcode). Depends on your CPU manufacturer install `amd-ucode` or `intel-ucode` package like below:
 
 ```sh
 sudo pacman -S intel-ucode
@@ -139,10 +139,10 @@ lspci -k | grep -A 2 -E "(VGA|3D)"
 
 ### Sound drivers <a name="sound-drivers"></a>
 
-Again the best info about installation options and steps can be found on Arch wiki page [here](https://wiki.archlinux.org/title/Sound_system)
-Below is an example installation of sound all sound drivers.
+Again the best info about installation options and steps can be found on Arch wiki page [here](https://wiki.archlinux.org/title/Sound_system).
+Below is an example installation of all sound drivers.
 
-Default Linux kernel component providing low level support for audio hardware:
+Install default Linux kernel component providing low level support for audio hardware:
 
 ```sh
 sudo pacman -S alsa-utils
@@ -172,7 +172,7 @@ sudo systemctl start bluetooth
 
 ### Install printers support <a name="printers-support"></a>
 
-Install cups and hp driver and print manager:
+Install cups and HP driver and print manager:
 
 ```sh
 sudo pacman -S cups hplip print-manager
